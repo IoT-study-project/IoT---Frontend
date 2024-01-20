@@ -1,13 +1,15 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import LoginScreen from './Login';
-import RegisterScreen from './Register';
-import MainInfo from './Main';
+import LoginScreen from './src/Login';
+import RegisterScreen from './src/Register';
+import MainInfo from './src/Main';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  // var cors = require('cors')
+  // App.use(cors())
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
