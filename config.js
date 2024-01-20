@@ -1,16 +1,13 @@
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 // export const url = `https://jsonplaceholder.typicode.com/users`;
-export const url = `https://o420wgpkd4.execute-api.eu-north-1.amazonaws.com/default/`;
+export const url = `https://i1j2f32umi.execute-api.eu-north-1.amazonaws.com/default/`;
 
-export const AuthHeader = async() => {
-    await SecureStore.setItemAsync('secure_token','sahdkfjaskdflas$%^&');
-    const token = await SecureStore.getItemAsync('secure_token');
-    console.log(token);
-    // const token = localStorage.getItem('token');
+export const setAuthToken = token => {
     if (token) {
-        return { 'Authorization': 'Bearer ' + token };
-    } else {
-        return {};
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
-}
+    else
+        delete axios.defaults.headers.common["Authorization"];
+ }

@@ -3,7 +3,8 @@ import axios from 'axios';
 import { StyleSheet, Text, TextInput, Pressable, View } from 'react-native';
 import { password_validation, username_validation, findInputError, isFormInvalid } from './inputValidation';
 import { FormProvider, useForm, Controller, set } from 'react-hook-form'
-import { url } from '../config';
+import { url, setAuthToken } from '../config';
+import * as SecureStore from 'expo-secure-store';
 
 const LoginScreen = ({ navigation }) => {
   const methods = useForm({
@@ -32,20 +33,38 @@ const LoginScreen = ({ navigation }) => {
     }
 
     console.log('Form is valid. Logging in:', data);
-    const JWTtoken = await axios.post(url, { data })
-    console.log(JWTtoken);
-    console.log(JWTtoken.data);
-    console.log('SUCCESS: ', data);
-    navigation.navigate('Login');
+    const JWTtoken = await axios.post(url + "login", data )
+    localStorage.setItem('token', JWTtoken.data.token);
+    // setAuthToken(JWTtoken.data.token);
+    // console.log(JWTtoken);
+    // console.log(JWTtoken.data);
+    // console.log(JWTtoken.data['token']);
+    // await SecureStore.setItemAsync('secure_token',JWTtoken.data['token']);
+    navigation.navigate('Main');
   };
 
-  const handleRegister = (data) => {
+  const handleRegister = () => {
     navigation.navigate('Register');
   };
+
+  const handleMain = () => {
+    const token = localStorage.getItem("token");
+    console.log(token);
+    if (token) {
+      navigation.navigate('Main');
+    }
+    else {
+      alert('Zaloguj się ponownie (reload tokena)!');
+    }
+  }
+
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
         <Text style={styles.IoT}>APLIKACJA IoT 💾</Text>
+        <Pressable style={styles.buttonRegister} onPress={handleMain}>
+          <Text style={styles.buttonText}>Przejdź do danych</Text>
+        </Pressable>
         <Text>Wprowadź nazwę użytkownika:</Text>
         <Controller
           control={methods.control}

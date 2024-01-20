@@ -27,7 +27,7 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
     console.log('Form is valid. Trying to register with:', data);
-    const response = await axios.post(url, { data })
+    const response = await axios.post(url + "register", data)
     console.log(response);
     console.log(response.data);
     console.log('SUCCESS: ', data);
