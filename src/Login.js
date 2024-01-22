@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, TextInput, Pressable, View } from 'react-native';
+import { StyleSheet, Text, TextInput, Pressable, View, Platform } from 'react-native';
 import { password_validation, username_validation, findInputError, isFormInvalid } from './inputValidation';
 import { FormProvider, useForm, Controller, set } from 'react-hook-form'
 import { url, setAuthToken } from '../config';
@@ -17,40 +17,59 @@ const LoginScreen = ({ navigation }) => {
     "username": "",
     "jwtToken": ""
   }
-  // const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [success, setSuccess] = useState(false)
 
-  const handleLogin = async(data) => {
+  const handleLogin = async (data) => {
     const errors = methods.formState.errors;
-    console.log('Data:', errors, isFormInvalid(errors));
     if (isFormInvalid(errors)) {
-      // Handle invalid form
       const usernameError = findInputError(errors, 'username');
       const passwordError = findInputError(errors, 'password');
-      console.log('Form is invalid. Username error:', usernameError, 'Password error:', passwordError);
       return;
     }
 
-    console.log('Form is valid. Logging in:', data);
-    const JWTtoken = await axios.post(url + "login", data )
-    localStorage.setItem('token', JWTtoken.data.token);
-    // setAuthToken(JWTtoken.data.token);
-    // console.log(JWTtoken);
-    // console.log(JWTtoken.data);
-    // console.log(JWTtoken.data['token']);
-    // await SecureStore.setItemAsync('secure_token',JWTtoken.data['token']);
-    navigation.navigate('Main');
+    await axios.post(url + "login", data)
+    .then(async JWTtoken => {
+      // console.log(JWTtoken);
+      if (Platform.OS === 'web') {
+        localStorage.setItem("token", JWTtoken.data.token);
+      }
+      else {
+        await SecureStore.setItemAsync('secure_token', JWTtoken.data.token);
+      }
+      navigation.navigate('Main');
+    })
+    .catch(error => {
+      if (error.response) {
+        if (error.response.status === 401) {
+          alert("Niepoprawne hasło")
+        } else if (error.response.status === 404) {
+          alert('Nie znaleziono użytkownika');
+        } else {
+          alert('Error:', error.response.status);
+        }
+      } else if (error.request) {
+        alert('No response received');
+      } else {
+        alert('Request setup error:', error.message);
+      }
+    });
   };
 
   const handleRegister = () => {
     navigation.navigate('Register');
   };
 
-  const handleMain = () => {
-    const token = localStorage.getItem("token");
-    console.log(token);
+  const handleMain = async () => {
+    let token;
+    if (Platform.OS === 'web') {
+      token = localStorage.getItem("token");
+    }
+    else {
+      token = await SecureStore.getItemAsync('secure_token');
+    }
     if (token) {
+      setAuthToken(token);
       navigation.navigate('Main');
     }
     else {
@@ -73,7 +92,7 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  console.log(text);
+                  // console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -82,7 +101,7 @@ const LoginScreen = ({ navigation }) => {
             </>
           )}
           name="username"
-        rules={username_validation.validation}
+          rules={username_validation.validation}
         />
 
         <Text>Wprowadź hasło:</Text>
@@ -93,7 +112,7 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  console.log(text);
+                  // console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -103,7 +122,7 @@ const LoginScreen = ({ navigation }) => {
             </>
           )}
           name="password"
-        rules={password_validation.validation}
+          rules={password_validation.validation}
         />
 
         <Pressable style={styles.button} onPress={methods.handleSubmit(handleLogin)}>

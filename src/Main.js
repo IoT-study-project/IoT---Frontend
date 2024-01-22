@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, Platform, TouchableOpacity, View } from 'react-native';
 import { url, setAuthToken } from '../config';
+import * as SecureStore from 'expo-secure-store';
 
 export default function MainInfo({ navigation }) {
-  // const [mail, setMail] = useState('');
   const [data, setData] = useState([]);
 
   const showData = async () => {
     // alert(`Tutaj powinny być Twoje dane`);
-    // navigation.navigate('Login');
-    // console.log('Pobieram dane' + await AuthHeader());
-    const token = localStorage.getItem("token");
-    console.log(token);
+    let token;
+    if (Platform.OS === 'web') {
+      token = localStorage.getItem("token");
+    }
+    else {
+      token = await SecureStore.getItemAsync('secure_token');
+    }
     if (token) {
       setAuthToken(token);
     }
@@ -20,36 +23,47 @@ export default function MainInfo({ navigation }) {
       alert('Zaloguj się ponownie (reload tokena)!');
       navigation.navigate('Login');
     }
-    const res = await axios.get(url + "get-last-data");
-    console.log(res);
-    console.log('SUCCESS: ', res.data);
-    setData(res.data);
+    await axios.get(url + "get-last-data")
+    .then(async res => {
+      setData(res.data);
+      navigation.navigate('Main');
+    })
+    .catch(error => {
+      if (error.response) {
+        if (error.response.status === 401) {
+          alert('Error:', error.response.status);
+        }
+      } else if (error.request) {
+        alert('No response received');
+      } else {
+        alert('Request setup error:', error.message);
+      }
+    });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.IoT}>APLIKACJA IoT 💾</Text>
       <Text style={styles.text}>Dane do wyświetlenia</Text>
-      {/* <Text>Wprowadź nazwę użytkownika:</Text> */}
       <TouchableOpacity style={styles.show} onPress={showData}>
         <Text style={styles.buttonText}>Pokaż info</Text>
       </TouchableOpacity>
       <Text style={styles.text}>Dane</Text>
-      <ul style={styles.text}>
+      <View style={styles.container}>
         {data.map((item, index) => (
-          <li key={index} style={styles.text}>
-            <p>Device ID: {item.device_id}</p>
-            <p>Sensor Data:</p>
-            <ul>
+          <View key={index} style={styles.itemContainer}>
+            <Text style={styles.text}>Device ID: {item.device_id}</Text>
+            <Text style={styles.text}>Sensor Data:</Text>
+            <View style={styles.sensorDataContainer}>
               {Object.entries(item.sensor_data).map(([key, value]) => (
-                <li key={key}>
-                  {key}: {value}
-                </li>
+                <View key={key} style={styles.sensorItem}>
+                  <Text style={styles.text}>{key}: {value}</Text>
+                </View>
               ))}
-            </ul>
-          </li>
+            </View>
+          </View>
         ))}
-      </ul>
+      </View>
     </View>
   );
 }

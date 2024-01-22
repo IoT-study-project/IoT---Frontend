@@ -12,26 +12,31 @@ const RegisterScreen = ({ navigation }) => {
       password: '',
     },
   });
-  // const [username, setUsername] = useState('');
-  // const [password, setPassword] = useState('');
-  // const [mail, setMail] = useState('');
-
   const verifyData = async (data) => {
     const errors = methods.formState.errors;
-    console.log('Data:', errors, isFormInvalid(errors));
     // #TODO: VALIDATE DATA
     if (isFormInvalid(errors)) {
       const usernameError = findInputError(errors, 'username');
       const passwordError = findInputError(errors, 'password');
-      console.log('Form is invalid. Username error:', usernameError, 'Password error:', passwordError);
       return;
     }
-    console.log('Form is valid. Trying to register with:', data);
-    const response = await axios.post(url + "register", data)
-    console.log(response);
-    console.log(response.data);
-    console.log('SUCCESS: ', data);
-    navigation.navigate('Login');
+    await axios.post(url + "register", data)
+    .then(async response => {
+      navigation.navigate('Login');
+    })
+    .catch(error => {
+      if (error.response) {
+        if (error.response.status === 409) {
+          alert('User exists!');
+        }else{
+          alert('Error:', error.response.status);
+        }
+      } else if (error.request) {
+        alert('No response received');
+      } else {
+        alert('Request setup error:', error.message);
+      }
+    });
   };
 
   return (
@@ -47,7 +52,6 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -56,7 +60,7 @@ const RegisterScreen = ({ navigation }) => {
             </>
           )}
           name="username"
-        rules={username_validation.validation}
+          rules={username_validation.validation}
         />
         <Text>Wprowadź hasło:</Text>
         <Controller
@@ -66,7 +70,6 @@ const RegisterScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -76,7 +79,7 @@ const RegisterScreen = ({ navigation }) => {
             </>
           )}
           name="password"
-        rules={password_validation.validation}
+          rules={password_validation.validation}
         />
         <Pressable style={styles.buttonRegister} onPress={methods.handleSubmit(verifyData)}>
           <Text style={styles.buttonText}>Zarejestruj się</Text>
