@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import { StyleSheet, Text, TextInput, Pressable, View, Platform } from 'react-native';
-import { password_validation, username_validation, findInputError, isFormInvalid } from './inputValidation';
-import { FormProvider, useForm, Controller, set } from 'react-hook-form'
+import { password_validation, username_validation} from './inputValidation';
+import { FormProvider, useForm, Controller} from 'react-hook-form'
 import { url, setAuthToken } from '../config';
 import * as SecureStore from 'expo-secure-store';
 
@@ -13,24 +13,11 @@ const LoginScreen = ({ navigation }) => {
       password: '',
     },
   });
-  const responseBody = {
-    "username": "",
-    "jwtToken": ""
-  }
-  const [password, setPassword] = useState('');
-  const [success, setSuccess] = useState(false)
 
   const handleLogin = async (data) => {
-    const errors = methods.formState.errors;
-    if (isFormInvalid(errors)) {
-      const usernameError = findInputError(errors, 'username');
-      const passwordError = findInputError(errors, 'password');
-      return;
-    }
 
     await axios.post(url + "login", data)
     .then(async JWTtoken => {
-      // console.log(JWTtoken);
       if (Platform.OS === 'web') {
         localStorage.setItem("token", JWTtoken.data.token);
       }
@@ -92,7 +79,6 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  // console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -112,7 +98,6 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 onChangeText={(text) => {
-                  // console.log(text);
                   field.onChange(text)
                 }}
                 value={field.value}
@@ -135,40 +120,6 @@ const LoginScreen = ({ navigation }) => {
     </FormProvider>
   );
 };
-//   return (
-//   <View style={styles.container}>
-//     <Text style={styles.IoT}>APLIKACJA IoT 💾</Text>
-//     <Text>Wprowadź nazwę użytkownika:</Text>
-//     <TextInput
-//       style={styles.input}
-//       onChangeText={(text) => {
-//           setUsername(text);
-//           validateField(text, username_validation.validation, setUsernameError);
-//         }}
-//       value={username}
-//       placeholder="Nazwa użytkownika"
-//     />
-//     {usernameError !== '' && <Text>{usernameError}</Text>}
-
-//     <Text>Wprowadź hasło:</Text>
-//     <TextInput
-//       style={styles.input}
-//       onChangeText={(text) => {
-//           setPassword(text);
-//           validateField(text, password_validation.validation, setPasswordError);
-//         }}
-//       value={password}
-//       placeholder="Hasło"
-//     />
-//     <Pressable style={styles.button} onPress={handleLogin}>
-//       <Text style={styles.buttonText}>Zaloguj</Text>
-//     </Pressable>
-//     <Pressable style={styles.buttonRegister} onPress={handleRegister}>
-//       <Text style={styles.buttonText}>Zarejestruj się</Text>
-//     </Pressable>
-//   </View>
-//   );
-// };
 export default LoginScreen;
 
 const styles = StyleSheet.create({
@@ -180,7 +131,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   IoT: {
-    // position:fixed,
     fontSize: 30,
     marginBottom: 20,
   },
