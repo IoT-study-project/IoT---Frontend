@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, Platform, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, Platform, Pressable, View } from 'react-native';
 import { url, setAuthToken } from '../config';
 import * as SecureStore from 'expo-secure-store';
 
@@ -8,7 +8,6 @@ export default function MainInfo({ navigation }) {
   const [data, setData] = useState([]);
 
   const showData = async () => {
-    // alert(`Tutaj powinny być Twoje dane`);
     let token;
     if (Platform.OS === 'web') {
       token = localStorage.getItem("token");
@@ -24,30 +23,43 @@ export default function MainInfo({ navigation }) {
       navigation.navigate('Login');
     }
     await axios.get(url + "get-last-data")
-    .then(async res => {
-      setData(res.data);
-      navigation.navigate('Main');
-    })
-    .catch(error => {
-      if (error.response) {
-        if (error.response.status === 401) {
-          alert('Error:', error.response.status);
+      .then(async res => {
+        setData(res.data);
+        navigation.navigate('Main');
+      })
+      .catch(error => {
+        if (error.response) {
+          if (error.response.status === 401) {
+            alert('Error:', error.response.status);
+          }
+        } else if (error.request) {
+          alert('No response received');
+        } else {
+          alert('Request setup error:', error.message);
         }
-      } else if (error.request) {
-        alert('No response received');
-      } else {
-        alert('Request setup error:', error.message);
-      }
-    });
+      });
+  };
+
+  const handleLogout = async () => {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem("token");
+    }
+    else {
+      await SecureStore.deleteItemAsync('secure_token');
+    }
+    navigation.navigate('Login');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.IoT}>APLIKACJA IoT 💾</Text>
       <Text style={styles.text}>Dane do wyświetlenia</Text>
-      <TouchableOpacity style={styles.show} onPress={showData}>
+      <Pressable style={styles.show} onPress={showData}>
         <Text style={styles.buttonText}>Pokaż info</Text>
-      </TouchableOpacity>
+      </Pressable>
+      <Pressable style={styles.logout} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Wyloguj</Text>
+      </Pressable>
       <Text style={styles.text}>Dane</Text>
       <View style={styles.container}>
         {data.map((item, index) => (
@@ -77,7 +89,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   IoT: {
-    // position:fixed,
     fontSize: 30,
     marginBottom: 20,
   },
@@ -87,6 +98,14 @@ const styles = StyleSheet.create({
   },
   show: {
     backgroundColor: 'gray',
+    margin: 10,
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  logout: {
+    backgroundColor: 'red',
     margin: 10,
     padding: 10,
     borderRadius: 5,

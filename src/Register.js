@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import { FormProvider, useForm, Controller } from 'react-hook-form';
 import { StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
-import { password_validation, username_validation, findInputError, isFormInvalid } from './inputValidation';
+import { password_validation, username_validation} from './inputValidation';
 import { url } from '../config';
 
 const RegisterScreen = ({ navigation }) => {
@@ -13,13 +13,6 @@ const RegisterScreen = ({ navigation }) => {
     },
   });
   const verifyData = async (data) => {
-    const errors = methods.formState.errors;
-    // #TODO: VALIDATE DATA
-    if (isFormInvalid(errors)) {
-      const usernameError = findInputError(errors, 'username');
-      const passwordError = findInputError(errors, 'password');
-      return;
-    }
     await axios.post(url + "register", data)
     .then(async response => {
       navigation.navigate('Login');
@@ -99,7 +92,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   IoT: {
-    // position:fixed,
     fontSize: 30,
     marginBottom: 20,
   },

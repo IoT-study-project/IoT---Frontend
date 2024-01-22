@@ -8,8 +8,6 @@ import MainInfo from './src/Main';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  // var cors = require('cors')
-  // App.use(cors())
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
