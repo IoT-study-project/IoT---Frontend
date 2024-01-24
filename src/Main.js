@@ -31,6 +31,13 @@ export default function MainInfo({ navigation }) {
         if (error.response) {
           if (error.response.status === 401) {
             alert('Error:', error.response.status);
+            if (Platform.OS === 'web') {
+              localStorage.removeItem("token");
+            }
+            else {
+              SecureStore.deleteItemAsync('secure_token');
+            }
+            navigation.navigate('Login');
           }
         } else if (error.request) {
           alert('No response received');
